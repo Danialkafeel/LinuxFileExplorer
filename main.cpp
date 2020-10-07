@@ -85,15 +85,13 @@ void cmd_mode(){
 					if(cmds.size() != 3){
 						cout<<"Invalid command\n:- ";
 						cmds.clear();					
-						break;		
+						break;
 					}
-					string dest_dir = cmds[cmds.size()-1];
-					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "rename"){
-							cout<<"Renaming "<<s<<endl;
-						}
-					}
+					string old_name, new_name;
+					old_name = cmds[1];
+					new_name = cmds[2];
+					if(rename(old_name.c_str(),new_name.c_str()) == -1)
+						perror("rename");
 				}
 
 				else if(cmds[0] == "create_file"){
