@@ -16,7 +16,7 @@ void cmd_mode(){
 	clr;
 	cout<<":- ";
 	
-	string tempcmd = "";
+	string rawcmd = "";
 	vector<string> cmds;
 	while(1){
 		char ch = cin.get();
@@ -26,26 +26,51 @@ void cmd_mode(){
 		}
 		cout<<ch;
 		switch(ch){
-			case 32:{	//	SPACE
-				cmds.push_back(tempcmd);
-				// cout<<"Pushed "<<tempcmd<<endl;
-				tempcmd = "";
-				break;
-			}
+			// case 32:{	//	SPACE
+			// 	cmds.push_back(rawcmd);
+			// 	// cout<<"Pushed "<<rawcmd<<endl;
+			// 	rawcmd = "";
+			// 	break;
+			// }
 			case 127:{	// Backspace
-				printf("\033[%dD", (1));
-				printf("\033[K");
-				if(tempcmd.size() > 0)
-					tempcmd.pop_back();
-				// cout<<"Deleting\n";
-				// cout<<"\b";
+				if(rawcmd.size() > 0){
+					rawcmd.pop_back();
+					printf("\033[%dD", (1));
+					printf("\033[K");
+				}
 				break;
 			}
 			case 10:{	// ENTER
-				cmds.push_back(tempcmd);
-				tempcmd = "";
+				// cmds.push_back(rawcmd);
+				// rawcmd = "";
+				int i = 0;
+				for(;i<rawcmd.size();i++){
+					if(rawcmd[i] != ' ')
+						break;
+				}
+				cout<<"rawcmd = "<<rawcmd<<endl;
+
+				string tempcmd = "";
+				for(;i<rawcmd.size();i++){
+					if(rawcmd[i] == ' '){
+						cmds.push_back(tempcmd);
+						tempcmd = "";
+					}
+					else{
+						tempcmd += rawcmd[i];
+					}
+				}
+				if(tempcmd != "")
+					cmds.push_back(tempcmd);
 
 				///	Now command is received in cmds;
+
+				cout<<"cmds ==>  ";
+				for(string s: cmds){
+					cout<<s<<" ";
+				}
+				cout<<endl;
+				rawcmd = "";
 
 				if(cmds.size() < 2 || cmds[0] == ""){
 					cout<<"Invalid command\n:- ";
@@ -151,24 +176,23 @@ void cmd_mode(){
 						}
 					}	
 				}
+				else if(cmds[0] == "goto"){
+
+				}
 
 				else{
 					cout<<"Invalid command\n:- ";
 					cmds.clear();					
 					break;
 				}
-				// cout<<"cmds entered \n";
-				// for(int i=0;i<cmds.size();i++){
-				// 	cout<<cmds[i]<<endl;
-				// }
 
 				cout<<":- ";
 				cmds.clear();
 				break;
 			}
 			default:{
-				tempcmd += ch;
-				// cout<<"temp = "<<tempcmd<<endl;
+				rawcmd += ch;
+				// cout<<"rawcmd = "<<rawcmd<<endl;
 			}
 		}
 	}
