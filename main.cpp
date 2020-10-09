@@ -26,6 +26,40 @@ void mypush(stack<string> &stk, char * str){
 	}
 }
 
+bool search(string str, string dir){
+	if(chdir(dir.c_str()) == -1){
+		// perror("chdir");
+		return 0;
+	}
+	char s[100];
+	getcwd(s,100);
+	struct stat myst;
+	mode_t m_temp;
+	DIR * temp = opendir(".");
+	struct dirent * p = readdir(temp);
+
+	while(p != NULL){
+		// cout<<"curr dir = "<<s<<endl;
+		if(p->d_name[0] != '.'){
+			stat(p->d_name,&myst);
+			m_temp = myst.st_mode;
+			cout<<"Checking ... "<<s<<"/"<<p->d_name<<endl;
+			if(p->d_name == str){
+				return 1;
+			}
+			if(m_temp & S_IFDIR){
+				string abc = s;
+				abc += "/";
+				abc += p->d_name;
+				if(search(str,abc))
+					return 1;
+			}
+		}
+		p = readdir(temp);
+	}
+	return 0;
+}
+
 void cmd_mode(){
 	clr;
 	cout<<":- ";
@@ -179,15 +213,16 @@ void cmd_mode(){
 					if(cmds.size() != 2){
 						cout<<"Invalid command\n:- ";
 						cmds.clear();					
-						break;		
+						break;	
 					}
-					string dest_dir = cmds[cmds.size()-1];
-					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "delete_file"){
-							cout<<"Deleting "<<s<<endl;
-						}
-					}	
+					string dest_dir = cmds[1];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
+
+					dest_dir = ROOT + dest_dir;
+					// cout<<"dest_dir = "<<dest_dir<<endl;
+					if(unlink(dest_dir.c_str()) != 0)
+						perror("unlink");					
 				}
 				else if(cmds[0] == "delete_dir"){
 					if(cmds.size() != 2){
@@ -195,13 +230,13 @@ void cmd_mode(){
 						cmds.clear();					
 						break;		
 					}
-					string dest_dir = cmds[cmds.size()-1];
-					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "delete_dir"){
-							cout<<"Deleting "<<s<<endl;
-						}
-					}	
+					string dest_dir = cmds[1];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
+
+					dest_dir = ROOT + dest_dir;
+					if(rmdir(dest_dir.c_str()) != 0)
+						perror("rmdir");			
 				}
 				else if(cmds[0] == "goto"){
 					if(cmds.size() != 2){
@@ -220,6 +255,24 @@ void cmd_mode(){
 					chdir(dest_dir.c_str());
 					mypush(back,s);
 				}
+				else if(cmds[0] == "search"){
+					if(cmds.size() != 2){
+						cout<<"Invalid command\n:- ";
+						cmds.clear();					
+						break;
+					}
+					string dest = cmds[1];
+					char s[100];
+					getcwd(s,100);
+					// cout<<s<<endl;
+					// break;
+					if(search(dest,s))
+						cout<<"Present\n";
+					else
+						cout<<"Not Present\n";
+					chdir(s);
+				}
+
 
 				else{
 					cout<<"Invalid command\n:- ";
