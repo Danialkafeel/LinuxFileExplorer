@@ -1,6 +1,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,6 +12,14 @@ using namespace std;
 int
 main(int argc, char *argv[])
 {
+
+
+    mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+    if(mkdir("/home/danial/Desktop/newdir",mode) != 0)
+      perror("mkdir");
+    return 1;
+    int x = creat("/home/danial/Desktop/newf.cpp",mode);
+
 
 
 	if(fork() == 0){

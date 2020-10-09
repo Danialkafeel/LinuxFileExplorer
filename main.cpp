@@ -1,7 +1,7 @@
 // #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-// #include <fcntl.h>
+#include <fcntl.h>
 #include <bits/stdc++.h>
 #include <dirent.h>
 #include <termios.h>
@@ -11,7 +11,21 @@
 #define clr printf("\033[H\033[J");
 
 using namespace std;
+
 string ROOT;
+stack<string> back;
+stack<string> forw;
+
+void mypush(stack<string> &stk, char * str){
+	if(stk.empty()){
+		stk.push(str);
+		return;
+	}
+	if(stk.top() != str){
+		stk.push(str);
+	}
+}
+
 void cmd_mode(){
 	clr;
 	cout<<":- ";
@@ -26,12 +40,7 @@ void cmd_mode(){
 		}
 		cout<<ch;
 		switch(ch){
-			// case 32:{	//	SPACE
-			// 	cmds.push_back(rawcmd);
-			// 	// cout<<"Pushed "<<rawcmd<<endl;
-			// 	rawcmd = "";
-			// 	break;
-			// }
+
 			case 127:{	// Backspace
 				if(rawcmd.size() > 0){
 					rawcmd.pop_back();
@@ -125,13 +134,22 @@ void cmd_mode(){
 						cmds.clear();					
 						break;		
 					}
-					string dest_dir = cmds[cmds.size()-1];
-					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "create_file"){
-							cout<<"Creating "<<s<<endl;
-						}
-					}	
+					string dest_dir = cmds[2];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
+
+					dest_dir = ROOT + dest_dir;
+					if(cmds[2] == "."){
+						char s[100];
+						getcwd(s,100);
+						dest_dir = s;
+					}
+					if(dest_dir[dest_dir.size()-1] != '/')
+						dest_dir += "/";
+					dest_dir += cmds[1];
+
+					mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+					creat(dest_dir.c_str(),mode);
 				}
 				else if(cmds[0] == "create_dir"){
 					if(cmds.size() != 3){
@@ -139,13 +157,22 @@ void cmd_mode(){
 						cmds.clear();					
 						break;		
 					}
-					string dest_dir = cmds[cmds.size()-1];
-					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "create_dir"){
-							cout<<"Creating "<<s<<endl;
-						}
-					}	
+					string dest_dir = cmds[2];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
+
+					dest_dir = ROOT + dest_dir;
+					if(cmds[2] == "."){
+						char s[100];
+						getcwd(s,100);
+						dest_dir = s;
+					}
+					if(dest_dir[dest_dir.size()-1] != '/')
+						dest_dir += "/";
+
+					dest_dir += cmds[1];
+					mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
+					mkdir(dest_dir.c_str(),mode);	
 				}
 
 				else if(cmds[0] == "delete_file"){
@@ -177,7 +204,21 @@ void cmd_mode(){
 					}	
 				}
 				else if(cmds[0] == "goto"){
+					if(cmds.size() != 2){
+						cout<<"Invalid command\n:- ";
+						cmds.clear();					
+						break;
+					}
+					string dest_dir = cmds[1];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
 
+					char s[100];
+					getcwd(s,100);
+
+					dest_dir = ROOT+dest_dir;
+					chdir(dest_dir.c_str());
+					mypush(back,s);
 				}
 
 				else{
@@ -264,18 +305,7 @@ void show_curr(){
 	}
 }
 
-void mypush(stack<string> &stk, char * str){
-	if(stk.empty()){
-		stk.push(str);
-		return;
-	}
-	if(stk.top() != str){
-		stk.push(str);
-	}
-}
 
-stack<string> back;
-stack<string> forw;
 char normal_mode(){
 	char ch;
 	vector<string> contents;
@@ -333,9 +363,9 @@ char normal_mode(){
 								string command = "vi";
 								// cout<<file.substr(file.size()-3,file.size()-1)<<endl;
 								string f_type = file.substr(file.size()-3,file.size()-1);
-								if(f_type=="pdf" || f_type=="jpg" || f_type=="png" || f_type=="tml"){
-									command = "xdg-open";
-								}
+								// if(f_type=="pdf" || f_type=="jpg" || f_type=="png" || f_type=="tml"){
+								command = "xdg-open";
+								// }
 								args[0] = (char *)command.c_str();
 								args[1] = (char *)file.c_str();
 								args[2] = NULL;
