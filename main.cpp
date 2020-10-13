@@ -60,8 +60,68 @@ bool search(string str, string dir){
 	return 0;
 }
 
+void remove(string dir){
+	if(chdir(dir.c_str()) == -1){
+		perror("chdir");
+		// cout<<"Not a dir ==> "<<dir<<endl;
+		return;
+	}
+	char s[100];
+	getcwd(s,100);
+	struct stat myst;
+	mode_t m_temp;
+	DIR * temp = opendir(".");
+	struct dirent * p = readdir(temp);
+
+	while(p != NULL){
+		// cout<<"curr dir = "<<s<<endl;
+		if(p->d_name[0] != '.'){
+			stat(p->d_name,&myst);
+			m_temp = myst.st_mode;
+			cout<<"Deleting ... "<<s<<"/"<<p->d_name<<endl;
+			if(m_temp & S_IFDIR){
+				string abc = s;
+				abc += "/";
+				abc += p->d_name;
+				// cout<<"this is a dir  = "<<p->d_name<<endl; 
+				remove(abc);
+			}
+			else{
+				string abc = s;
+				abc += "/";
+				abc += p->d_name;
+				// cout<<"file deleted"<<abc<<endl;
+				unlink(abc.c_str());
+			}
+		}
+		p = readdir(temp);
+	}
+	// cout<<dir<<" deleted\n";
+	chdir("..");
+	if(rmdir(dir.c_str()) == -1)
+		perror("rmdir");
+	return;
+}
+
+void gotoxy(int x, int y) {
+    printf("\033[%d;%dH",x,y);
+}
+
 void cmd_mode(){
 	clr;
+	gotoxy(100,1);
+	cout<<"\033[1mCommands Available \033[0m";
+	cout<<"\n\x1B[33m";
+	cout<<"create_file <filename> <dest_path>\ncreate_dir <dir_name> <dest_path>";
+	cout<<"delete_file <file_path>\n";
+	cout<<"delete_dir <file_path> (Deletes Recursively)\n";
+	cout<<"goto <directory_path>\n";
+	cout<<"search search <file/directory name>\n";
+	cout<<"rename <old_filename> <new_filename>\n";
+	cout<<"\033[34m";
+	cout<<"All paths are absolute to application root (~/xyz or /xyz or '.')\n";
+	gotoxy(0,0);
+	cout<<"\x1B[0m";
 	cout<<":- ";
 	
 	string rawcmd = "";
@@ -91,7 +151,7 @@ void cmd_mode(){
 					if(rawcmd[i] != ' ')
 						break;
 				}
-				cout<<"rawcmd = "<<rawcmd<<endl;
+				// cout<<"rawcmd = "<<rawcmd<<endl;
 
 				string tempcmd = "";
 				for(;i<rawcmd.size();i++){
@@ -108,7 +168,7 @@ void cmd_mode(){
 
 				///	Now command is received in cmds;
 
-				cout<<"cmds ==>  ";
+				// cout<<"cmds ==>  ";
 				for(string s: cmds){
 					cout<<s<<" ";
 				}
@@ -235,8 +295,14 @@ void cmd_mode(){
 						dest_dir.erase(0,1);
 
 					dest_dir = ROOT + dest_dir;
-					if(rmdir(dest_dir.c_str()) != 0)
-						perror("rmdir");			
+					cout<<"dsfdsf = "<<dest_dir<<endl;
+					// if(rmdir(dest_dir.c_str()) != 0)
+					// 	perror("rmdir");	
+					
+					char s[100];
+					getcwd(s,100);
+					remove(dest_dir);
+					// chdir(s);		
 				}
 				else if(cmds[0] == "goto"){
 					if(cmds.size() != 2){
@@ -568,6 +634,9 @@ int main(){
     // printf("\033[J");
     clr;
     cout<<"\n\n";
+    cout<<"\033[36m";
+    cout<<"\033[1m";
     cout<<left<<setw(100)<<""<<"See you Later !!\n\n";
+	cout<<"\033[0m";
 	return 0;
 }
