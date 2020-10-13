@@ -107,21 +107,28 @@ void gotoxy(int x, int y) {
     printf("\033[%d;%dH",x,y);
 }
 
-void cmd_mode(){
-	clr;
+void available_commands(){
 	gotoxy(100,1);
 	cout<<"\033[1mCommands Available \033[0m";
 	cout<<"\n\x1B[33m";
-	cout<<"create_file <filename> <dest_path>\ncreate_dir <dir_name> <dest_path>";
+	cout<<"copy <source_file(s)> <destination_directory>\n";
+	cout<<"move <source_file(s)> <destination_directory>\n";
+	cout<<"rename <old_filename> <new_filename>\n";
+	cout<<"create_file <filename> <dest_path>\ncreate_dir <dir_name> <dest_path>\n";
 	cout<<"delete_file <file_path>\n";
 	cout<<"delete_dir <file_path> (Deletes Recursively)\n";
 	cout<<"goto <directory_path>\n";
-	cout<<"search search <file/directory name>\n";
-	cout<<"rename <old_filename> <new_filename>\n";
-	cout<<"\033[34m";
-	cout<<"All paths are absolute to application root (~/xyz or /xyz or '.')\n";
+	cout<<"search <file/directory name>\n";
+	cout<<"\033[32m";
+	cout<<"All paths are absolute to application root (~/xyz or /xyz or '.')";
 	gotoxy(0,0);
 	cout<<"\x1B[0m";
+	return;
+}
+
+void cmd_mode(){
+	clr;
+	available_commands();
 	cout<<":- ";
 	
 	string rawcmd = "";
@@ -188,10 +195,20 @@ void cmd_mode(){
 						break;		
 					}
 					string dest_dir = cmds[cmds.size()-1];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
+					// cout<<"Copying to "<<ROOT+dest_dir+cmds[1]<<endl;
 					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "copy"){
-							cout<<"Copying "<<s<<endl;
+					for(string str:cmds){
+						if(str != "copy"){
+							cout<<"Copying "<<str<<endl;
+							ifstream source(str,ios::binary);
+							ofstream dest(ROOT+dest_dir+"/"+str,ios::binary);
+
+							dest << source.rdbuf();
+
+							source.close();
+							dest.close();
 						}
 					}
 				}
@@ -202,12 +219,27 @@ void cmd_mode(){
 						break;		
 					}
 					string dest_dir = cmds[cmds.size()-1];
+					if(dest_dir[0] == '~')
+						dest_dir.erase(0,1);
+					// cout<<"Moving to "<<ROOT+dest_dir+cmds[1]<<endl;
 					cmds.pop_back();
-					for(string s:cmds){
-						if(s != "move"){
-							cout<<"Moving "<<s<<endl;
+					char s[100];
+					getcwd(s,100);
+					for(string str:cmds){
+						if(str != "move"){
+							cout<<"Moving "<<str<<endl;
+							ifstream source(str,ios::binary);
+							ofstream dest(ROOT+dest_dir+"/"+str,ios::binary);
+
+							dest << source.rdbuf();
+
+							source.close();
+							dest.close();
 						}
-					}	
+						string del = s;
+						del += "/"+str;
+						unlink(del.c_str());
+					}
 				}
 				else if(cmds[0] == "rename"){
 					if(cmds.size() != 3){
@@ -376,7 +408,21 @@ void read_curr(vector<string> &contents){
 	}
 }
 
+void normal_mode_commands(){
+	gotoxy(100,1);
+	cout<<"\033[32m";
+	cout<<"Press x to Exit\n";
+	cout<<"Press : to Enter Command Mode\n";
+	cout<<"Press h to go to home\n";
+	cout<<"Press Backspace to go one level up";
+	gotoxy(0,0);
+	cout<<"\x1B[0m";
+	return;
+}
+
 void show_curr(){
+	normal_mode_commands();
+
 	DIR * temp = opendir(".");
 	struct stat myst;
 	mode_t m_temp;
@@ -634,7 +680,6 @@ int main(){
     // printf("\033[J");
     clr;
     cout<<"\n\n";
-    cout<<"\033[36m";
     cout<<"\033[1m";
     cout<<left<<setw(100)<<""<<"See you Later !!\n\n";
 	cout<<"\033[0m";
