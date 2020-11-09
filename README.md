@@ -1,4 +1,4 @@
 # LinuxExplorer
 
 ## Prerequisites
-* System G++ compiler installed `` sudo apt-get install g++``
+* System with g++ compiler installed `` sudo apt-get install g++``
