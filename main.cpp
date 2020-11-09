@@ -414,7 +414,8 @@ void normal_mode_commands(){
 	cout<<"Press x to Exit\n";
 	cout<<"Press : to Enter Command Mode\n";
 	cout<<"Press h to go to home\n";
-	cout<<"Press Backspace to go one level up";
+	cout<<"Press Backspace to go one level up\n";
+	cout<<"Arrow keys for navigation / forward & backward";
 	gotoxy(0,0);
 	cout<<"\x1B[0m";
 	return;
