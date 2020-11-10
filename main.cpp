@@ -120,7 +120,8 @@ void available_commands(){
 	cout<<"goto <directory_path>\n";
 	cout<<"search <file/directory name>\n";
 	cout<<"\033[32m";
-	cout<<"All paths are absolute to application root (~/xyz or /xyz or '.')";
+	cout<<"All paths are absolute to application root (~/xyz or /xyz or '.')\n";
+	cout<<"Press ESC to return to normal mode";
 	gotoxy(0,0);
 	cout<<"\x1B[0m";
 	return;
