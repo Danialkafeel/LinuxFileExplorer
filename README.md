@@ -12,5 +12,6 @@
 * Two modes in the project.
   - Normal Mode. (Default)
   - Command Mode.
+* The `root` of the application is the directory where the application was started.
 * When pressed `Enter` on a directory, it'll get open, and the file is opened in its default application.
 * All the executable commands are listed at the bottom of the terminal.
